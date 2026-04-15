@@ -7,6 +7,7 @@ import Predictions from './views/Predictions.jsx';
 import Reporters from './views/Reporters.jsx';
 import AuditTrail from './views/AuditTrail.jsx';
 import Leaderboard from './views/Leaderboard.jsx';
+import SeasonDashboard from './views/SeasonDashboard.jsx';
 import useWallet from './hooks/useWallet.js';
 import useChainData from './hooks/useChainData.js';
 
@@ -91,7 +92,10 @@ export default function App() {
         <AuditTrail contracts={contracts} matches={matches} />
       )}
       {view === 'leaderboard' && (
-        <Leaderboard contracts={contracts} />
+        <Leaderboard contracts={contracts} matches={matches} />
+      )}
+      {view === 'season' && (
+        <SeasonDashboard matches={matches} flags={flags} seasonStats={seasonStats} />
       )}
     </div>
   );

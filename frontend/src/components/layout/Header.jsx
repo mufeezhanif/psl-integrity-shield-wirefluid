@@ -5,6 +5,7 @@ import { NETWORK } from '../../config/constants.js';
 
 const NAV_ITEMS = [
   { key: 'dashboard', label: 'Dashboard' },
+  { key: 'season', label: 'Season Report' },
   { key: 'predictions', label: 'Predictions' },
   { key: 'reporters', label: 'Reporters' },
   { key: 'leaderboard', label: 'Leaderboard' },
