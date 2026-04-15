@@ -4,6 +4,9 @@ import Header from './components/layout/Header.jsx';
 import Dashboard from './views/Dashboard.jsx';
 import MatchDetail from './components/match/MatchDetail.jsx';
 import Predictions from './views/Predictions.jsx';
+import Reporters from './views/Reporters.jsx';
+import AuditTrail from './views/AuditTrail.jsx';
+import Leaderboard from './views/Leaderboard.jsx';
 import useWallet from './hooks/useWallet.js';
 import useChainData from './hooks/useChainData.js';
 
@@ -24,7 +27,7 @@ export default function App() {
     setSelectedMatch(null);
   }, []);
 
-  const handleNavigate = useCallback((v) => {
+  const navigate = useCallback((v) => {
     setView(v);
     setSelectedMatch(null);
   }, []);
@@ -57,8 +60,8 @@ export default function App() {
       <Header
         wallet={wallet}
         onConnect={connect}
-        onNavigateDashboard={() => handleNavigate('dashboard')}
-        onNavigatePredictions={() => handleNavigate('predictions')}
+        onNavigate={navigate}
+        activeView={view}
         copied={copied}
         onCopy={copyAddress}
       />
@@ -73,28 +76,22 @@ export default function App() {
       )}
 
       {view === 'dashboard' && (
-        <Dashboard
-          matches={matches}
-          flags={flags}
-          seasonStats={seasonStats}
-          onSelectMatch={handleSelectMatch}
-          onRefresh={refresh}
-        />
+        <Dashboard matches={matches} flags={flags} seasonStats={seasonStats} onSelectMatch={handleSelectMatch} onRefresh={refresh} />
       )}
-
       {view === 'match' && selectedMatch && (
-        <MatchDetail
-          match={selectedMatch}
-          flags={flags}
-          wallet={wallet}
-          onBack={handleBack}
-          onRaiseFlag={handleRaiseFlag}
-          onVote={handleVote}
-        />
+        <MatchDetail match={selectedMatch} flags={flags} wallet={wallet} onBack={handleBack} onRaiseFlag={handleRaiseFlag} onVote={handleVote} />
       )}
-
       {view === 'predictions' && (
-        <Predictions contracts={contracts} wallet={wallet} />
+        <Predictions contracts={contracts} wallet={wallet} matches={matches} />
+      )}
+      {view === 'reporters' && (
+        <Reporters contracts={contracts} wallet={wallet} />
+      )}
+      {view === 'audit' && (
+        <AuditTrail contracts={contracts} matches={matches} />
+      )}
+      {view === 'leaderboard' && (
+        <Leaderboard contracts={contracts} />
       )}
     </div>
   );
