@@ -1,0 +1,101 @@
+import React, { useState, useCallback } from 'react';
+import { ethers } from 'ethers';
+import Header from './components/layout/Header.jsx';
+import Dashboard from './views/Dashboard.jsx';
+import MatchDetail from './components/match/MatchDetail.jsx';
+import Predictions from './views/Predictions.jsx';
+import useWallet from './hooks/useWallet.js';
+import useChainData from './hooks/useChainData.js';
+
+export default function App() {
+  const { wallet, copied, connect, copyAddress, contracts } = useWallet();
+  const { matches, flags, loading, seasonStats, refresh } = useChainData(contracts);
+
+  const [view, setView] = useState('dashboard');
+  const [selectedMatch, setSelectedMatch] = useState(null);
+
+  const handleSelectMatch = useCallback((match) => {
+    setSelectedMatch(match);
+    setView('match');
+  }, []);
+
+  const handleBack = useCallback(() => {
+    setView('dashboard');
+    setSelectedMatch(null);
+  }, []);
+
+  const handleNavigate = useCallback((v) => {
+    setView(v);
+    setSelectedMatch(null);
+  }, []);
+
+  const handleRaiseFlag = useCallback(async ({ matchId, description, stakeWire }) => {
+    if (!contracts?.anomalyTracker) return;
+    try {
+      const tx = await contracts.anomalyTracker.raiseFlag(matchId, description, { value: ethers.parseEther(stakeWire) });
+      await tx.wait();
+      refresh();
+    } catch (e) {
+      alert('Flag failed: ' + (e.reason || e.message));
+    }
+  }, [contracts, refresh]);
+
+  const handleVote = useCallback(async (flagId, direction) => {
+    if (!contracts?.anomalyTracker) return;
+    try {
+      const support = direction === 'up';
+      const tx = await contracts.anomalyTracker.voteOnFlag(flagId, support, { value: ethers.parseEther('0.005') });
+      await tx.wait();
+      refresh();
+    } catch (e) {
+      alert('Vote failed: ' + (e.reason || e.message));
+    }
+  }, [contracts, refresh]);
+
+  return (
+    <div className="min-h-screen bg-black text-white">
+      <Header
+        wallet={wallet}
+        onConnect={connect}
+        onNavigateDashboard={() => handleNavigate('dashboard')}
+        onNavigatePredictions={() => handleNavigate('predictions')}
+        copied={copied}
+        onCopy={copyAddress}
+      />
+
+      {loading && matches.length === 0 && (
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-[#00e676] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-sm text-[#8892b0]">Loading on-chain data...</p>
+          </div>
+        </div>
+      )}
+
+      {view === 'dashboard' && (
+        <Dashboard
+          matches={matches}
+          flags={flags}
+          seasonStats={seasonStats}
+          onSelectMatch={handleSelectMatch}
+          onRefresh={refresh}
+        />
+      )}
+
+      {view === 'match' && selectedMatch && (
+        <MatchDetail
+          match={selectedMatch}
+          flags={flags}
+          wallet={wallet}
+          onBack={handleBack}
+          onRaiseFlag={handleRaiseFlag}
+          onVote={handleVote}
+        />
+      )}
+
+      {view === 'predictions' && (
+        <Predictions contracts={contracts} wallet={wallet} />
+      )}
+    </div>
+  );
+}
