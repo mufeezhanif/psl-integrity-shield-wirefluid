@@ -117,7 +117,7 @@
 ## Links to Have Open
 
 1. https://psl-integrity-shield.vercel.app
-2. https://scan.wirefluid.com/address/0x787fbf712fc3BAEa7Bc2eC7cd9b7486A3332dbcE
-3. https://scan.wirefluid.com/tx/0x9eb67dac20fb9c421fbb568dc00219d495e811fbcabea7a2fa887db9177af1f3
+2. https://wirefluidscan.com/address/0x787fbf712fc3BAEa7Bc2eC7cd9b7486A3332dbcE
+3. https://wirefluidscan.com/tx/0x9eb67dac20fb9c421fbb568dc00219d495e811fbcabea7a2fa887db9177af1f3
 4. GitHub repo: https://github.com/mufeezhanif/wirefluid-hackathon
 5. Terminal with `cd backend && npx hardhat test` ready to run

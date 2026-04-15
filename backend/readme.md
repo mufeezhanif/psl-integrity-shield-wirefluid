@@ -6,9 +6,9 @@ Solidity smart contracts powering the on-chain anti-match-fixing protocol for PS
 
 | Contract | Description | Address |
 |----------|-------------|---------|
-| **MatchOracle** | Immutable event ledger with staked reporters, state machine (Upcoming→Live→Completed), trust scores | [`0x787f...dbcE`](https://scan.wirefluid.com/address/0x787fbf712fc3BAEa7Bc2eC7cd9b7486A3332dbcE) |
-| **PredictionEngine** | Commit-reveal crowd predictions, winner tracking, divergence detection (>70% threshold) | [`0x0150...1e47`](https://scan.wirefluid.com/address/0x015055E95c55de974576B2118848771a210F1e47) |
-| **AnomalyTracker** | Stake-weighted anomaly flagging, quorum voting, integrity scores, clean match certification | [`0x841D...00c6`](https://scan.wirefluid.com/address/0x841D668719338F3292Cd4DB7911C9E704bCc00c6) |
+| **MatchOracle** | Immutable event ledger with staked reporters, state machine (Upcoming→Live→Completed), trust scores | [`0x787f...dbcE`](https://wirefluidscan.com/address/0x787fbf712fc3BAEa7Bc2eC7cd9b7486A3332dbcE) |
+| **PredictionEngine** | Commit-reveal crowd predictions, winner tracking, divergence detection (>70% threshold) | [`0x0150...1e47`](https://wirefluidscan.com/address/0x015055E95c55de974576B2118848771a210F1e47) |
+| **AnomalyTracker** | Stake-weighted anomaly flagging, quorum voting, integrity scores, clean match certification | [`0x841D...00c6`](https://wirefluidscan.com/address/0x841D668719338F3292Cd4DB7911C9E704bCc00c6) |
 
 ## Security
 
@@ -46,7 +46,7 @@ The deploy script creates 3 sample PSL matches, registers a reporter, submits ev
 
 - **Chain:** WireFluid Testnet (92533)
 - **RPC:** `https://evm.wirefluid.com`
-- **Explorer:** [scan.wirefluid.com](https://scan.wirefluid.com)
+- **Explorer:** [wirefluidscan.com](https://wirefluidscan.com)
 
 ## Structure
 

@@ -35,9 +35,9 @@ Three interlocking smart contracts that make match integrity **transparent**, **
 
 | Contract | Address |
 |----------|---------|
-| MatchOracle | [`0x787fbf712fc3BAEa7Bc2eC7cd9b7486A3332dbcE`](https://scan.wirefluid.com/address/0x787fbf712fc3BAEa7Bc2eC7cd9b7486A3332dbcE) |
-| PredictionEngine | [`0x015055E95c55de974576B2118848771a210F1e47`](https://scan.wirefluid.com/address/0x015055E95c55de974576B2118848771a210F1e47) |
-| AnomalyTracker | [`0x841D668719338F3292Cd4DB7911C9E704bCc00c6`](https://scan.wirefluid.com/address/0x841D668719338F3292Cd4DB7911C9E704bCc00c6) |
+| MatchOracle | [`0x787fbf712fc3BAEa7Bc2eC7cd9b7486A3332dbcE`](https://wirefluidscan.com/address/0x787fbf712fc3BAEa7Bc2eC7cd9b7486A3332dbcE) |
+| PredictionEngine | [`0x015055E95c55de974576B2118848771a210F1e47`](https://wirefluidscan.com/address/0x015055E95c55de974576B2118848771a210F1e47) |
+| AnomalyTracker | [`0x841D668719338F3292Cd4DB7911C9E704bCc00c6`](https://wirefluidscan.com/address/0x841D668719338F3292Cd4DB7911C9E704bCc00c6) |
 
 Deployer: `0x07413b065106518F307d5ea7309514fB31D740cA`
 
@@ -81,29 +81,29 @@ Dark-themed glass-morphism design. 6 views (Dashboard, Season Report, Prediction
 
 ## Deployment Transaction Hashes
 
-All verifiable on [WireFluidScan](https://scan.wirefluid.com).
+All verifiable on [WireFluidScan](https://wirefluidscan.com).
 
 ### Contract Deployments
 
 | Contract | Tx Hash |
 |----------|---------|
-| MatchOracle | [`0x9eb67dac20fb9c421fbb568dc00219d495e811fbcabea7a2fa887db9177af1f3`](https://scan.wirefluid.com/tx/0x9eb67dac20fb9c421fbb568dc00219d495e811fbcabea7a2fa887db9177af1f3) |
-| PredictionEngine | [`0xa401a267999a0fec734273ca1dd61cf3eb533216e34bdf3f6a79f30faa6c0896`](https://scan.wirefluid.com/tx/0xa401a267999a0fec734273ca1dd61cf3eb533216e34bdf3f6a79f30faa6c0896) |
-| AnomalyTracker | [`0xb01eea2e2b4cc1892a5996ffd421fc755b76afbd437bd133f1bd8066c24ec1f2`](https://scan.wirefluid.com/tx/0xb01eea2e2b4cc1892a5996ffd421fc755b76afbd437bd133f1bd8066c24ec1f2) |
+| MatchOracle | [`0x9eb67dac20fb9c421fbb568dc00219d495e811fbcabea7a2fa887db9177af1f3`](https://wirefluidscan.com/tx/0x9eb67dac20fb9c421fbb568dc00219d495e811fbcabea7a2fa887db9177af1f3) |
+| PredictionEngine | [`0xa401a267999a0fec734273ca1dd61cf3eb533216e34bdf3f6a79f30faa6c0896`](https://wirefluidscan.com/tx/0xa401a267999a0fec734273ca1dd61cf3eb533216e34bdf3f6a79f30faa6c0896) |
+| AnomalyTracker | [`0xb01eea2e2b4cc1892a5996ffd421fc755b76afbd437bd133f1bd8066c24ec1f2`](https://wirefluidscan.com/tx/0xb01eea2e2b4cc1892a5996ffd421fc755b76afbd437bd133f1bd8066c24ec1f2) |
 
 ### Sample Data (On-Chain Proof of Full Lifecycle)
 
 | Action | Tx Hash |
 |--------|---------|
-| Match 1 created (LQ vs IU) | [`0xbf977102519a21b6bec5c2ef53dcd2a5492e2842fae09758005e80cadf290605`](https://scan.wirefluid.com/tx/0xbf977102519a21b6bec5c2ef53dcd2a5492e2842fae09758005e80cadf290605) |
-| Match 2 created (KK vs PZ) | [`0x76c0995102fb0204c3a91be77208e9e369d385abf80c32d236c235059a9ce1c9`](https://scan.wirefluid.com/tx/0x76c0995102fb0204c3a91be77208e9e369d385abf80c32d236c235059a9ce1c9) |
-| Match 3 created (MS vs QG) | [`0x3007032873a7b11d3e379bbb52085a858f981aef6922c7017af9d4e0b5f5fbdc`](https://scan.wirefluid.com/tx/0x3007032873a7b11d3e379bbb52085a858f981aef6922c7017af9d4e0b5f5fbdc) |
-| Reporter registered (0.01 WIRE staked) | [`0x9dd11456030840677b5a9fc39e3cd1866989eb2a20c3146689baa57f3c9e56d7`](https://scan.wirefluid.com/tx/0x9dd11456030840677b5a9fc39e3cd1866989eb2a20c3146689baa57f3c9e56d7) |
-| Match 1 started | [`0x6ad2a61919b652f8ae4110a86c463070a9bf601d567d38b05c496de7f91206de`](https://scan.wirefluid.com/tx/0x6ad2a61919b652f8ae4110a86c463070a9bf601d567d38b05c496de7f91206de) |
-| Event 1 submitted | [`0xa342a464708a082db604ddca35e61be5d0f54139d85dfb5ea977864e720a0d41`](https://scan.wirefluid.com/tx/0xa342a464708a082db604ddca35e61be5d0f54139d85dfb5ea977864e720a0d41) |
-| Event 2 submitted | [`0x358c2bca9b57108e360712972eedf12c3a6bfa83ad1e8cc3be614c31762a9054`](https://scan.wirefluid.com/tx/0x358c2bca9b57108e360712972eedf12c3a6bfa83ad1e8cc3be614c31762a9054) |
-| Event 3 submitted | [`0xce4d5914640b52cfa6c761aa520436c93b019e5f4382d267f5a0272eb44579cd`](https://scan.wirefluid.com/tx/0xce4d5914640b52cfa6c761aa520436c93b019e5f4382d267f5a0272eb44579cd) |
-| Match 1 ended | [`0x41f1e77afe9ce83f31134622c847774c1db0627c3d88eccf9d149e1e126c10b6`](https://scan.wirefluid.com/tx/0x41f1e77afe9ce83f31134622c847774c1db0627c3d88eccf9d149e1e126c10b6) |
+| Match 1 created (LQ vs IU) | [`0xbf977102519a21b6bec5c2ef53dcd2a5492e2842fae09758005e80cadf290605`](https://wirefluidscan.com/tx/0xbf977102519a21b6bec5c2ef53dcd2a5492e2842fae09758005e80cadf290605) |
+| Match 2 created (KK vs PZ) | [`0x76c0995102fb0204c3a91be77208e9e369d385abf80c32d236c235059a9ce1c9`](https://wirefluidscan.com/tx/0x76c0995102fb0204c3a91be77208e9e369d385abf80c32d236c235059a9ce1c9) |
+| Match 3 created (MS vs QG) | [`0x3007032873a7b11d3e379bbb52085a858f981aef6922c7017af9d4e0b5f5fbdc`](https://wirefluidscan.com/tx/0x3007032873a7b11d3e379bbb52085a858f981aef6922c7017af9d4e0b5f5fbdc) |
+| Reporter registered (0.01 WIRE staked) | [`0x9dd11456030840677b5a9fc39e3cd1866989eb2a20c3146689baa57f3c9e56d7`](https://wirefluidscan.com/tx/0x9dd11456030840677b5a9fc39e3cd1866989eb2a20c3146689baa57f3c9e56d7) |
+| Match 1 started | [`0x6ad2a61919b652f8ae4110a86c463070a9bf601d567d38b05c496de7f91206de`](https://wirefluidscan.com/tx/0x6ad2a61919b652f8ae4110a86c463070a9bf601d567d38b05c496de7f91206de) |
+| Event 1 submitted | [`0xa342a464708a082db604ddca35e61be5d0f54139d85dfb5ea977864e720a0d41`](https://wirefluidscan.com/tx/0xa342a464708a082db604ddca35e61be5d0f54139d85dfb5ea977864e720a0d41) |
+| Event 2 submitted | [`0x358c2bca9b57108e360712972eedf12c3a6bfa83ad1e8cc3be614c31762a9054`](https://wirefluidscan.com/tx/0x358c2bca9b57108e360712972eedf12c3a6bfa83ad1e8cc3be614c31762a9054) |
+| Event 3 submitted | [`0xce4d5914640b52cfa6c761aa520436c93b019e5f4382d267f5a0272eb44579cd`](https://wirefluidscan.com/tx/0xce4d5914640b52cfa6c761aa520436c93b019e5f4382d267f5a0272eb44579cd) |
+| Match 1 ended | [`0x41f1e77afe9ce83f31134622c847774c1db0627c3d88eccf9d149e1e126c10b6`](https://wirefluidscan.com/tx/0x41f1e77afe9ce83f31134622c847774c1db0627c3d88eccf9d149e1e126c10b6) |
 
 ## Features
 

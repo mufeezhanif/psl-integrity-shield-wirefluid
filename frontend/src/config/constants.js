@@ -3,7 +3,7 @@ export const NETWORK = {
   name: 'WireFluid Testnet',
   currency: 'WIRE',
   rpc: 'https://evm.wirefluid.com',
-  explorer: 'https://scan.wirefluid.com',
+  explorer: 'https://wirefluidscan.com',
 };
 
 /** Real-ish PSL team accent colors for dark UI */

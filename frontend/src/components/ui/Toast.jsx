@@ -35,7 +35,7 @@ function ToastItem({ toast, onDismiss }) {
         <p className="text-xs text-[#8892b0] break-words">{toast.message}</p>
         {toast.txHash && (
           <a
-            href={`https://scan.wirefluid.com/tx/${toast.txHash}`}
+            href={`https://wirefluidscan.com/tx/${toast.txHash}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-[10px] font-mono hover:underline mt-1 inline-block"
