@@ -16,7 +16,7 @@ function getSalt(matchId) {
   return salts[matchId] || '';
 }
 
-export default function Predictions({ contracts, wallet, matches }) {
+export default function Predictions({ contracts, wallet, matches, addToast }) {
   const [commitMatchId, setCommitMatchId] = useState('');
   const [commitWinner, setCommitWinner] = useState('');
   const [commitRuns, setCommitRuns] = useState('');
@@ -56,13 +56,17 @@ export default function Predictions({ contracts, wallet, matches }) {
       const salt = ethers.randomBytes(32);
       const saltHex = ethers.hexlify(salt);
       const hash = ethers.keccak256(ethers.solidityPacked(['string', 'uint256', 'bytes32'], [commitWinner, commitRuns, saltHex]));
+      addToast?.('info', 'Committing Prediction', 'Confirm in MetaMask...');
       const tx = await contracts.predictionEngine.commitPrediction(commitMatchId, hash);
       await tx.wait();
       setSavedSalt(saltHex);
       saveSalt(commitMatchId, saltHex);
       setStatus('Committed! Salt saved to browser storage.');
+      addToast?.('success', 'Prediction Committed', 'Your prediction has been locked on-chain', { txHash: tx.hash });
     } catch (e) {
-      setStatus('Error: ' + (e.reason || e.message));
+      const msg = e.reason || e.message;
+      setStatus('Error: ' + msg);
+      addToast?.('error', 'Commit Failed', msg);
     } finally {
       setCommitLoading(false);
     }
@@ -73,11 +77,15 @@ export default function Predictions({ contracts, wallet, matches }) {
     setRevealLoading(true);
     setStatus('');
     try {
+      addToast?.('info', 'Revealing Prediction', 'Confirm in MetaMask...');
       const tx = await contracts.predictionEngine.revealPrediction(revealMatchId, revealWinner, revealRuns, revealSalt);
       await tx.wait();
       setStatus('Prediction revealed successfully!');
+      addToast?.('success', 'Prediction Revealed', 'Your prediction is now public on-chain', { txHash: tx.hash });
     } catch (e) {
-      setStatus('Error: ' + (e.reason || e.message));
+      const msg = e.reason || e.message;
+      setStatus('Error: ' + msg);
+      addToast?.('error', 'Reveal Failed', msg);
     } finally {
       setRevealLoading(false);
     }

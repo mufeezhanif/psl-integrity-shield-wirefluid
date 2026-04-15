@@ -141,6 +141,29 @@ describe("PSL Integrity Shield", function () {
       await matchOracle.createMatch(2, "KK", "PZ");
       expect(await matchOracle.matchCount()).to.equal(2);
     });
+
+    it("should pause and unpause operations", async function () {
+      await matchOracle.pause();
+      await expect(matchOracle.createMatch(1, "LQ", "IU"))
+        .to.be.revertedWithCustomError(matchOracle, "EnforcedPause");
+      await matchOracle.unpause();
+      await expect(matchOracle.createMatch(1, "LQ", "IU"))
+        .to.emit(matchOracle, "MatchCreated");
+    });
+
+    it("should allow owner to withdraw slashed funds", async function () {
+      const stake = ethers.parseEther("0.01");
+      await matchOracle.connect(reporter).registerReporter({ value: stake });
+      await matchOracle.slashReporter(reporter.address);
+
+      const balBefore = await ethers.provider.getBalance(owner.address);
+      const tx = await matchOracle.withdrawSlashedFunds();
+      const receipt = await tx.wait();
+      const gasCost = receipt.gasUsed * receipt.gasPrice;
+      const balAfter = await ethers.provider.getBalance(owner.address);
+
+      expect(balAfter + gasCost - balBefore).to.equal(stake);
+    });
   });
 
   // ══════════════════════════════════════════════════════════════════
@@ -395,6 +418,52 @@ describe("PSL Integrity Shield", function () {
 
     it("should return 100 for uninitialized match", async function () {
       expect(await anomalyTracker.getIntegrityScore(999)).to.equal(100);
+    });
+
+    it("should allow voters to withdraw stakes after resolution", async function () {
+      await anomalyTracker.connect(fan1).raiseFlag(1, "Test flag", { value: flagStake });
+      await anomalyTracker.connect(fan2).voteOnFlag(1, true, { value: voteStake });
+      await anomalyTracker.connect(fan3).voteOnFlag(1, true, { value: voteStake });
+      await anomalyTracker.connect(owner).voteOnFlag(1, true, { value: voteStake });
+      await anomalyTracker.resolveFlag(1);
+
+      const balBefore = await ethers.provider.getBalance(fan2.address);
+      const tx = await anomalyTracker.connect(fan2).withdrawVoteStake(1);
+      const receipt = await tx.wait();
+      const gasCost = receipt.gasUsed * receipt.gasPrice;
+      const balAfter = await ethers.provider.getBalance(fan2.address);
+
+      expect(balAfter + gasCost - balBefore).to.equal(voteStake);
+    });
+
+    it("should reject double vote stake withdrawal", async function () {
+      await anomalyTracker.connect(fan1).raiseFlag(1, "Test flag", { value: flagStake });
+      await anomalyTracker.connect(fan2).voteOnFlag(1, true, { value: voteStake });
+      await anomalyTracker.connect(fan3).voteOnFlag(1, true, { value: voteStake });
+      await anomalyTracker.connect(owner).voteOnFlag(1, true, { value: voteStake });
+      await anomalyTracker.resolveFlag(1);
+
+      await anomalyTracker.connect(fan2).withdrawVoteStake(1);
+      await expect(anomalyTracker.connect(fan2).withdrawVoteStake(1))
+        .to.be.revertedWith("Already withdrawn");
+    });
+
+    it("should reject vote stake withdrawal before resolution", async function () {
+      await anomalyTracker.connect(fan1).raiseFlag(1, "Test flag", { value: flagStake });
+      await anomalyTracker.connect(fan2).voteOnFlag(1, true, { value: voteStake });
+      await expect(anomalyTracker.connect(fan2).withdrawVoteStake(1))
+        .to.be.revertedWith("Flag not resolved");
+    });
+
+    it("should pause and unpause operations", async function () {
+      await anomalyTracker.pause();
+      await expect(
+        anomalyTracker.connect(fan1).raiseFlag(1, "Test", { value: flagStake })
+      ).to.be.revertedWithCustomError(anomalyTracker, "EnforcedPause");
+      await anomalyTracker.unpause();
+      await expect(
+        anomalyTracker.connect(fan1).raiseFlag(1, "Test after unpause", { value: flagStake })
+      ).to.emit(anomalyTracker, "FlagRaised");
     });
   });
 });

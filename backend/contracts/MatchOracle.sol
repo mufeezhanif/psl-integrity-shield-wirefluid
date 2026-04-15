@@ -3,13 +3,14 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 
 /**
  * @title MatchOracle
  * @notice Immutable event ledger for PSL matches.
  * Staked reporters submit ball-by-ball event hashes during live matches.
  */
-contract MatchOracle is Ownable, ReentrancyGuard {
+contract MatchOracle is Ownable, ReentrancyGuard, Pausable {
 
     enum MatchState { Upcoming, Live, Completed }
 
@@ -37,6 +38,7 @@ contract MatchOracle is Ownable, ReentrancyGuard {
     event MatchEnded(uint256 indexed matchId);
     event ReporterSlashed(address indexed reporter, uint256 amount);
     event ReporterScoreUpdated(address indexed reporter, uint256 newScore);
+    event FundsWithdrawn(address indexed to, uint256 amount);
 
     modifier onlyReporter() {
         require(registeredReporters[msg.sender], "Not a registered reporter");
@@ -50,7 +52,7 @@ contract MatchOracle is Ownable, ReentrancyGuard {
 
     constructor() Ownable(msg.sender) {}
 
-    function createMatch(uint256 matchId, string calldata team1, string calldata team2) external onlyOwner {
+    function createMatch(uint256 matchId, string calldata team1, string calldata team2) external onlyOwner whenNotPaused {
         require(matches[matchId].createdAt == 0, "Match already exists");
         require(bytes(team1).length > 0 && bytes(team2).length > 0, "Empty team name");
         matches[matchId] = Match({ team1: team1, team2: team2, state: MatchState.Upcoming, eventCount: 0, createdAt: block.timestamp });
@@ -58,13 +60,13 @@ contract MatchOracle is Ownable, ReentrancyGuard {
         emit MatchCreated(matchId, team1, team2);
     }
 
-    function startMatch(uint256 matchId) external onlyOwner matchExists(matchId) {
+    function startMatch(uint256 matchId) external onlyOwner matchExists(matchId) whenNotPaused {
         require(matches[matchId].state == MatchState.Upcoming, "Match not in Upcoming state");
         matches[matchId].state = MatchState.Live;
         emit MatchStarted(matchId);
     }
 
-    function endMatch(uint256 matchId) external onlyOwner matchExists(matchId) {
+    function endMatch(uint256 matchId) external onlyOwner matchExists(matchId) whenNotPaused {
         require(matches[matchId].state == MatchState.Live, "Match not in Live state");
         matches[matchId].state = MatchState.Completed;
         emit MatchEnded(matchId);
@@ -79,7 +81,7 @@ contract MatchOracle is Ownable, ReentrancyGuard {
         emit ReporterSlashed(reporter, amount);
     }
 
-    function registerReporter() external payable nonReentrant {
+    function registerReporter() external payable nonReentrant whenNotPaused {
         require(!registeredReporters[msg.sender], "Already registered");
         require(msg.value >= reporterStake, "Insufficient stake");
         registeredReporters[msg.sender] = true;
@@ -89,7 +91,7 @@ contract MatchOracle is Ownable, ReentrancyGuard {
         emit ReporterScoreUpdated(msg.sender, 100);
     }
 
-    function submitEvent(uint256 matchId, bytes32 eventHash) external onlyReporter matchExists(matchId) {
+    function submitEvent(uint256 matchId, bytes32 eventHash) external onlyReporter matchExists(matchId) whenNotPaused {
         require(matches[matchId].state == MatchState.Live, "Match not Live");
         uint256 eventIndex = matches[matchId].eventCount;
         matchEvents[matchId][eventIndex] = eventHash;
@@ -106,6 +108,17 @@ contract MatchOracle is Ownable, ReentrancyGuard {
     }
 
     function getReporterScore(address reporter) external view returns (uint256) { return reporterScores[reporter]; }
+
+    function pause() external onlyOwner { _pause(); }
+    function unpause() external onlyOwner { _unpause(); }
+
+    function withdrawSlashedFunds() external onlyOwner nonReentrant {
+        uint256 bal = address(this).balance;
+        require(bal > 0, "No funds");
+        (bool sent, ) = payable(owner()).call{value: bal}("");
+        require(sent, "Withdraw failed");
+        emit FundsWithdrawn(owner(), bal);
+    }
 
     function _updateReporterScore(address reporter, int256 delta) internal {
         int256 current = int256(reporterScores[reporter]);

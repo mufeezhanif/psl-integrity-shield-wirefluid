@@ -8,8 +8,20 @@ import Reporters from './views/Reporters.jsx';
 import AuditTrail from './views/AuditTrail.jsx';
 import Leaderboard from './views/Leaderboard.jsx';
 import SeasonDashboard from './views/SeasonDashboard.jsx';
+import ToastContainer from './components/ui/Toast.jsx';
 import useWallet from './hooks/useWallet.js';
 import useChainData from './hooks/useChainData.js';
+
+let toastId = 0;
+
+function parseTxError(e) {
+  if (e.reason) return e.reason;
+  if (e.data?.message) return e.data.message;
+  if (e.message?.includes('user rejected')) return 'Transaction rejected by user';
+  if (e.message?.includes('insufficient funds')) return 'Insufficient WIRE balance';
+  if (e.code === 'ACTION_REJECTED') return 'Transaction rejected by user';
+  return e.message || 'Transaction failed';
+}
 
 export default function App() {
   const { wallet, copied, connect, copyAddress, contracts } = useWallet();
@@ -17,6 +29,16 @@ export default function App() {
 
   const [view, setView] = useState('dashboard');
   const [selectedMatch, setSelectedMatch] = useState(null);
+  const [toasts, setToasts] = useState([]);
+
+  const addToast = useCallback((type, title, message, extra = {}) => {
+    const id = ++toastId;
+    setToasts(prev => [...prev, { id, type, title, message, ...extra }]);
+  }, []);
+
+  const dismissToast = useCallback((id) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
 
   const handleSelectMatch = useCallback((match) => {
     setSelectedMatch(match);
@@ -36,25 +58,31 @@ export default function App() {
   const handleRaiseFlag = useCallback(async ({ matchId, description, stakeWire }) => {
     if (!contracts?.anomalyTracker) return;
     try {
+      addToast('info', 'Submitting Flag', 'Confirm the transaction in MetaMask...');
       const tx = await contracts.anomalyTracker.raiseFlag(matchId, description, { value: ethers.parseEther(stakeWire) });
+      addToast('info', 'Transaction Sent', 'Waiting for confirmation...', { txHash: tx.hash });
       await tx.wait();
+      addToast('success', 'Flag Raised', `Flag submitted for Match #${matchId}`, { txHash: tx.hash });
       refresh();
     } catch (e) {
-      alert('Flag failed: ' + (e.reason || e.message));
+      addToast('error', 'Flag Failed', parseTxError(e));
     }
-  }, [contracts, refresh]);
+  }, [contracts, refresh, addToast]);
 
   const handleVote = useCallback(async (flagId, direction) => {
     if (!contracts?.anomalyTracker) return;
     try {
       const support = direction === 'up';
+      addToast('info', 'Submitting Vote', 'Confirm the transaction in MetaMask...');
       const tx = await contracts.anomalyTracker.voteOnFlag(flagId, support, { value: ethers.parseEther('0.005') });
+      addToast('info', 'Transaction Sent', 'Waiting for confirmation...', { txHash: tx.hash });
       await tx.wait();
+      addToast('success', 'Vote Cast', `Vote ${support ? 'for' : 'against'} flag #${flagId} confirmed`, { txHash: tx.hash });
       refresh();
     } catch (e) {
-      alert('Vote failed: ' + (e.reason || e.message));
+      addToast('error', 'Vote Failed', parseTxError(e));
     }
-  }, [contracts, refresh]);
+  }, [contracts, refresh, addToast]);
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -83,10 +111,10 @@ export default function App() {
         <MatchDetail match={selectedMatch} flags={flags} wallet={wallet} onBack={handleBack} onRaiseFlag={handleRaiseFlag} onVote={handleVote} />
       )}
       {view === 'predictions' && (
-        <Predictions contracts={contracts} wallet={wallet} matches={matches} />
+        <Predictions contracts={contracts} wallet={wallet} matches={matches} addToast={addToast} />
       )}
       {view === 'reporters' && (
-        <Reporters contracts={contracts} wallet={wallet} />
+        <Reporters contracts={contracts} wallet={wallet} addToast={addToast} />
       )}
       {view === 'audit' && (
         <AuditTrail contracts={contracts} matches={matches} />
@@ -97,6 +125,8 @@ export default function App() {
       {view === 'season' && (
         <SeasonDashboard matches={matches} flags={flags} seasonStats={seasonStats} />
       )}
+
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
 }

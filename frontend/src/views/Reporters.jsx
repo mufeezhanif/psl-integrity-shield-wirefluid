@@ -11,7 +11,7 @@ function TrustBadge({ score }) {
   return <Badge variant="red">Low ({score})</Badge>;
 }
 
-export default function Reporters({ contracts, wallet }) {
+export default function Reporters({ contracts, wallet, addToast }) {
   const [isReporter, setIsReporter] = useState(false);
   const [stake, setStake] = useState('0');
   const [trustScore, setTrustScore] = useState(0);
@@ -54,11 +54,14 @@ export default function Reporters({ contracts, wallet }) {
     if (!contracts?.matchOracle) return;
     setRegistering(true);
     try {
+      addToast?.('info', 'Registering Reporter', 'Confirm in MetaMask (0.01 WIRE)...');
       const tx = await contracts.matchOracle.registerReporter({ value: ethers.parseEther('0.01') });
       await tx.wait();
+      addToast?.('success', 'Reporter Registered', 'You are now a staked reporter!', { txHash: tx.hash });
       loadStatus();
     } catch (e) {
-      alert('Registration failed: ' + (e.reason || e.message));
+      const msg = e.reason || e.message;
+      addToast?.('error', 'Registration Failed', msg);
     } finally {
       setRegistering(false);
     }

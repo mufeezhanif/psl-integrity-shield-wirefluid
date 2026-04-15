@@ -3,8 +3,9 @@ pragma solidity ^0.8.20;
 
 import "./MatchOracle.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 
-contract AnomalyTracker is ReentrancyGuard {
+contract AnomalyTracker is ReentrancyGuard, Pausable {
     struct Flag { uint256 matchId; address flagger; string reason; uint256 stake; uint256 votesFor; uint256 votesAgainst; uint256 voterCount; bool resolved; bool upheld; }
 
     MatchOracle public matchOracle;
@@ -17,17 +18,23 @@ contract AnomalyTracker is ReentrancyGuard {
     mapping(uint256 => bool) public integrityInitialized;
     mapping(uint256 => mapping(address => bool)) public hasVoted;
     mapping(uint256 => mapping(address => uint256)) public voteStakes;
+    mapping(uint256 => mapping(address => bool)) public voteStakeWithdrawn;
     mapping(uint256 => bool) public certifiedClean;
+    address public owner;
 
     event FlagRaised(uint256 indexed flagId, uint256 indexed matchId, address indexed flagger, string reason, uint256 stake);
     event VoteCast(uint256 indexed flagId, address indexed voter, bool support, uint256 weight);
     event FlagResolved(uint256 indexed flagId, bool upheld);
     event IntegrityScoreUpdated(uint256 indexed matchId, uint256 newScore);
     event CleanMatchCertified(uint256 indexed matchId, uint256 finalScore);
+    event VoteStakeWithdrawn(uint256 indexed flagId, address indexed voter, uint256 amount);
+    event FundsWithdrawn(address indexed to, uint256 amount);
 
-    constructor(address _matchOracle) { require(_matchOracle != address(0), "Invalid oracle address"); matchOracle = MatchOracle(_matchOracle); }
+    modifier onlyOwner() { require(msg.sender == owner, "Not owner"); _; }
 
-    function raiseFlag(uint256 matchId, string calldata reason) external payable nonReentrant {
+    constructor(address _matchOracle) { require(_matchOracle != address(0), "Invalid oracle address"); matchOracle = MatchOracle(_matchOracle); owner = msg.sender; }
+
+    function raiseFlag(uint256 matchId, string calldata reason) external payable nonReentrant whenNotPaused {
         require(matchOracle.getMatchState(matchId) == MatchOracle.MatchState.Completed, "Match not Completed");
         require(msg.value >= minFlagStake, "Insufficient flag stake"); require(bytes(reason).length > 0, "Empty reason");
         _initIntegrity(matchId); flagCount++;
@@ -35,7 +42,7 @@ contract AnomalyTracker is ReentrancyGuard {
         emit FlagRaised(flagCount, matchId, msg.sender, reason, msg.value);
     }
 
-    function voteOnFlag(uint256 flagId, bool support) external payable nonReentrant {
+    function voteOnFlag(uint256 flagId, bool support) external payable nonReentrant whenNotPaused {
         Flag storage f = flags[flagId];
         require(f.stake > 0, "Flag does not exist"); require(!f.resolved, "Flag already resolved");
         require(!hasVoted[flagId][msg.sender], "Already voted"); require(msg.value > 0, "Must stake to vote");
@@ -69,6 +76,30 @@ contract AnomalyTracker is ReentrancyGuard {
 
     function getIntegrityScore(uint256 matchId) external view returns (uint256) { return integrityInitialized[matchId] ? integrityScores[matchId] : 100; }
     function isMatchCertified(uint256 matchId) external view returns (bool) { return certifiedClean[matchId]; }
+
+    function withdrawVoteStake(uint256 flagId) external nonReentrant {
+        Flag storage f = flags[flagId];
+        require(f.resolved, "Flag not resolved");
+        require(hasVoted[flagId][msg.sender], "Not a voter");
+        require(!voteStakeWithdrawn[flagId][msg.sender], "Already withdrawn");
+        uint256 amount = voteStakes[flagId][msg.sender];
+        require(amount > 0, "No stake");
+        voteStakeWithdrawn[flagId][msg.sender] = true;
+        (bool sent, ) = payable(msg.sender).call{value: amount}("");
+        require(sent, "Withdraw failed");
+        emit VoteStakeWithdrawn(flagId, msg.sender, amount);
+    }
+
+    function pause() external onlyOwner { _pause(); }
+    function unpause() external onlyOwner { _unpause(); }
+
+    function withdrawSlashedFunds() external onlyOwner nonReentrant {
+        uint256 bal = address(this).balance;
+        require(bal > 0, "No funds");
+        (bool sent, ) = payable(owner).call{value: bal}("");
+        require(sent, "Withdraw failed");
+        emit FundsWithdrawn(owner, bal);
+    }
 
     function getFlag(uint256 flagId) external view returns (uint256 matchId, address flagger, string memory reason, uint256 stake, uint256 votesFor, uint256 votesAgainst, uint256 voterCount, bool resolved, bool upheld) {
         Flag storage fl = flags[flagId]; return (fl.matchId, fl.flagger, fl.reason, fl.stake, fl.votesFor, fl.votesAgainst, fl.voterCount, fl.resolved, fl.upheld);

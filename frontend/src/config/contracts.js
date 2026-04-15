@@ -1,9 +1,9 @@
 import { ethers } from 'ethers';
 
 export const ADDRESSES = {
-  MatchOracle: '0x7b457E75Ad7AB2331FCDdeC5f0a80d33a6e34771',
-  PredictionEngine: '0xa97094e559e2570A37045542fed7A1Ff03763E87',
-  AnomalyTracker: '0x1570200C79D6245ba77797541e4fab90bCfDAC34',
+  MatchOracle: '0x787fbf712fc3BAEa7Bc2eC7cd9b7486A3332dbcE',
+  PredictionEngine: '0x015055E95c55de974576B2118848771a210F1e47',
+  AnomalyTracker: '0x841D668719338F3292Cd4DB7911C9E704bCc00c6',
 };
 
 export const ABI_MO = [
@@ -18,8 +18,12 @@ export const ABI_MO = [
   'function registeredReporters(address) view returns (bool)',
   'function reporterStakes(address) view returns (uint256)',
   'function getReporterScore(address) view returns (uint256)',
+  'function pause()',
+  'function unpause()',
+  'function withdrawSlashedFunds()',
   'event EventSubmitted(uint256 indexed,address indexed,bytes32,uint256)',
   'event ReporterRegistered(address indexed,uint256)',
+  'event FundsWithdrawn(address indexed,uint256)',
 ];
 
 export const ABI_PE = [
@@ -43,8 +47,14 @@ export const ABI_AT = [
   'function isMatchCertified(uint256) view returns (bool)',
   'function getFlag(uint256) view returns (uint256,address,string,uint256,uint256,uint256,uint256,bool,bool)',
   'function flagCount() view returns (uint256)',
+  'function withdrawVoteStake(uint256)',
+  'function pause()',
+  'function unpause()',
+  'function withdrawSlashedFunds()',
   'event FlagRaised(uint256 indexed,uint256 indexed,address indexed,string,uint256)',
   'event CleanMatchCertified(uint256 indexed,uint256)',
+  'event VoteStakeWithdrawn(uint256 indexed,address indexed,uint256)',
+  'event FundsWithdrawn(address indexed,uint256)',
 ];
 
 export function getContracts(signer) {
