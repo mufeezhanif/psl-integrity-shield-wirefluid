@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
-import { Shield, UserPlus, Users, Lock } from 'lucide-react';
+import { Shield, UserPlus, Users, Lock, Send, Radio } from 'lucide-react';
 import Card from '../components/ui/Card.jsx';
 import Button from '../components/ui/Button.jsx';
 import Badge from '../components/ui/Badge.jsx';
@@ -11,13 +11,18 @@ function TrustBadge({ score }) {
   return <Badge variant="red">Low ({score})</Badge>;
 }
 
-export default function Reporters({ contracts, wallet, addToast }) {
+export default function Reporters({ contracts, wallet, addToast, matches }) {
   const [isReporter, setIsReporter] = useState(false);
   const [stake, setStake] = useState('0');
   const [trustScore, setTrustScore] = useState(0);
   const [loading, setLoading] = useState(false);
   const [registering, setRegistering] = useState(false);
   const [reporters, setReporters] = useState([]);
+  const [eventMatchId, setEventMatchId] = useState('');
+  const [eventDesc, setEventDesc] = useState('');
+  const [submittingEvent, setSubmittingEvent] = useState(false);
+
+  const liveMatches = (matches || []).filter(m => m.status === 'Live');
 
   const loadStatus = useCallback(async () => {
     if (!contracts?.matchOracle || !wallet) return;
@@ -67,6 +72,26 @@ export default function Reporters({ contracts, wallet, addToast }) {
     }
   }
 
+  async function handleSubmitEvent() {
+    if (!contracts?.matchOracle || !eventMatchId || !eventDesc.trim()) return;
+    setSubmittingEvent(true);
+    try {
+      const eventHash = ethers.keccak256(ethers.toUtf8Bytes(eventDesc.trim()));
+      addToast?.('info', 'Submitting Event', `Hashing: ${eventDesc.trim().slice(0, 40)}...`);
+      const tx = await contracts.matchOracle.submitEvent(eventMatchId, eventHash);
+      addToast?.('info', 'Transaction Sent', 'Waiting for confirmation...', { txHash: tx.hash });
+      await tx.wait();
+      addToast?.('success', 'Event Submitted', `Event hash recorded for Match #${eventMatchId}`, { txHash: tx.hash });
+      setEventDesc('');
+      loadStatus();
+    } catch (e) {
+      const msg = e.reason || e.message;
+      addToast?.('error', 'Event Submission Failed', msg);
+    } finally {
+      setSubmittingEvent(false);
+    }
+  }
+
   return (
     <div className="max-w-4xl mx-auto px-6 py-8 animate-fade-up">
       <h2 className="text-2xl font-black text-[#e6f1ff] mb-2">
@@ -109,6 +134,61 @@ export default function Reporters({ contracts, wallet, addToast }) {
               <Button onClick={handleRegister} loading={registering} icon={UserPlus} className="text-xs">
                 Register as Reporter (0.01 WIRE)
               </Button>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* Event Submission — only for registered reporters */}
+      {wallet && isReporter && (
+        <Card className="mb-6">
+          <h3 className="font-bold text-[#ccd6f6] flex items-center gap-2 text-sm uppercase tracking-wider mb-4">
+            <Radio className="w-4 h-4 text-[#ff3860]" /> Submit Live Event
+          </h3>
+          {liveMatches.length > 0 ? (
+            <>
+              <div className="grid sm:grid-cols-2 gap-3 mb-3">
+                <select
+                  value={eventMatchId}
+                  onChange={(e) => setEventMatchId(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl text-sm text-[#ccd6f6] outline-none appearance-none cursor-pointer"
+                  style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.09)' }}
+                >
+                  <option value="">Select live match...</option>
+                  {liveMatches.map(m => (
+                    <option key={m.id} value={m.id}>#{m.id} {m.team1} vs {m.team2}</option>
+                  ))}
+                </select>
+                <input
+                  type="text"
+                  value={eventDesc}
+                  onChange={(e) => setEventDesc(e.target.value)}
+                  placeholder="e.g. over:5 ball:3 runs:4 wicket:false"
+                  className="w-full px-3 py-2.5 rounded-xl text-sm text-[#ccd6f6] placeholder-[#4a5568] outline-none"
+                  style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.09)' }}
+                />
+              </div>
+              {eventDesc.trim() && (
+                <p className="text-[10px] text-[#8892b0] mb-3 font-mono break-all">
+                  Hash: {ethers.keccak256(ethers.toUtf8Bytes(eventDesc.trim()))}
+                </p>
+              )}
+              <Button
+                onClick={handleSubmitEvent}
+                loading={submittingEvent}
+                disabled={!eventMatchId || !eventDesc.trim()}
+                icon={Send}
+                className="text-xs"
+              >
+                {submittingEvent ? 'Submitting...' : 'Submit Event Hash'}
+              </Button>
+              <p className="text-[10px] text-[#8892b0] mt-2">
+                Event description is hashed with keccak256 before submission. Only the hash is stored on-chain.
+              </p>
+            </>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-xs text-[#8892b0]">No live matches right now. Events can only be submitted during live matches.</p>
             </div>
           )}
         </Card>

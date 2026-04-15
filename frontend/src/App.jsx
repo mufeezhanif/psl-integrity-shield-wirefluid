@@ -114,7 +114,7 @@ export default function App() {
         <Predictions contracts={contracts} wallet={wallet} matches={matches} addToast={addToast} />
       )}
       {view === 'reporters' && (
-        <Reporters contracts={contracts} wallet={wallet} addToast={addToast} />
+        <Reporters contracts={contracts} wallet={wallet} addToast={addToast} matches={matches} />
       )}
       {view === 'audit' && (
         <AuditTrail contracts={contracts} matches={matches} />
