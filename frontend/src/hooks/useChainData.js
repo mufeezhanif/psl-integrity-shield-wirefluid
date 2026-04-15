@@ -7,13 +7,14 @@ export default function useChainData(contracts) {
   const [loading, setLoading] = useState(true);
   const [seasonStats, setSeasonStats] = useState({ matches: 0, avgScore: 0, flags: 0, predictions: 0, certified: 0 });
   const lastFetchRef = useRef(0);
+  const hasDataRef = useRef(false);
 
   const loadData = useCallback(async () => {
     if (!contracts?.matchOracle) return;
 
     // Throttle: skip if called within 3 seconds
     const now = Date.now();
-    if (now - lastFetchRef.current < 3000 && matches.length > 0) return;
+    if (now - lastFetchRef.current < 3000 && hasDataRef.current) return;
     lastFetchRef.current = now;
 
     setLoading(true);
@@ -78,7 +79,8 @@ export default function useChainData(contracts) {
             return {
               id: i, matchId, description: f[2],
               stakeWire: ethers.formatEther(f[3]),
-              upvotes: Number(f[4]), downvotes: Number(f[5]),
+              upvotes: parseFloat(ethers.formatEther(f[4])),
+              downvotes: parseFloat(ethers.formatEther(f[5])),
               voterCount: Number(f[6]),
               reporter: `${f[1].slice(0, 6)}...${f[1].slice(-4)}`,
               reporterFull: f[1],
@@ -97,6 +99,7 @@ export default function useChainData(contracts) {
         totalPred += m.totalCommits;
       }
 
+      hasDataRef.current = enriched.length > 0;
       setMatches(enriched);
       setFlags(flagList);
       setSeasonStats({

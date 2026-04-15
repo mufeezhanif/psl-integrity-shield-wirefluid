@@ -72,7 +72,7 @@ export default function Leaderboard({ contracts, matches }) {
       }
     }
     load();
-  }, [contracts, matches]);
+  }, [contracts]);
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-8 animate-fade-up">

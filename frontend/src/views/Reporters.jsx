@@ -123,8 +123,8 @@ export default function Reporters({ contracts, wallet, addToast }) {
           <p className="text-sm text-[#8892b0] text-center py-8">No reporters found yet.</p>
         ) : (
           <div className="space-y-2">
-            {reporters.map((r, i) => (
-              <div key={i} className="flex items-center justify-between p-3 rounded-xl" style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.09)' }}>
+            {reporters.map((r) => (
+              <div key={r.address} className="flex items-center justify-between p-3 rounded-xl" style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.09)' }}>
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: `hsl(${parseInt(r.address.slice(2, 6), 16) % 360}, 70%, 60%)`, color: '#000' }}>
                     {r.address.slice(2, 4).toUpperCase()}

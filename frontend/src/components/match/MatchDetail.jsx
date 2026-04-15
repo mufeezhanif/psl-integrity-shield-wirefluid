@@ -102,6 +102,7 @@ export default function MatchDetail({ match, flags, wallet, onBack, onRaiseFlag,
           wallet={wallet}
           onRaiseFlag={onRaiseFlag}
           onVote={onVote}
+          matchStatus={match.status}
         />
       </div>
 

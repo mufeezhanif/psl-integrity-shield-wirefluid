@@ -119,7 +119,7 @@ export default function Dashboard({ matches, flags, seasonStats, onSelectMatch, 
               className="px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200"
               style={
                 filter === tab
-                  ? { background: 'linear-gradient(135deg, #00e676, #00b4d8)', color: '#000000'}
+                  ? { background: 'linear-gradient(135deg, #00e676, #00b4d8)', color: '#000000', border: '1px solid transparent'}
                   : {
                       background: '#111111',
                       border: '1px solid rgba(255,255,255,0.09)',

@@ -24,7 +24,7 @@ function VoteBar({ upvotes, downvotes }) {
   );
 }
 
-export default function FlagForm({ matchId, matchFlags, wallet, onRaiseFlag, onVote }) {
+export default function FlagForm({ matchId, matchFlags, wallet, onRaiseFlag, onVote, matchStatus }) {
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const STAKE = '0.05';
@@ -32,10 +32,12 @@ export default function FlagForm({ matchId, matchFlags, wallet, onRaiseFlag, onV
   async function handleSubmit() {
     if (!description.trim()) return;
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    onRaiseFlag({ matchId, description, stakeWire: STAKE });
-    setDescription('');
-    setLoading(false);
+    try {
+      await onRaiseFlag({ matchId, description, stakeWire: STAKE });
+    } finally {
+      setDescription('');
+      setLoading(false);
+    }
   }
 
   return (
@@ -75,7 +77,7 @@ export default function FlagForm({ matchId, matchFlags, wallet, onRaiseFlag, onV
                       title="W — supports the flag"
                     >
                       <ThumbsUp className="w-3 h-3" />
-                      {flag.upvotes}
+                      {flag.voterCount > 0 ? `${flag.upvotes.toFixed(3)}` : '0'}
                     </button>
                     <button
                       className="flex items-center gap-1 text-[#8892b0] hover:text-[#ff3860] transition-colors text-xs font-semibold"
@@ -83,12 +85,12 @@ export default function FlagForm({ matchId, matchFlags, wallet, onRaiseFlag, onV
                       title="L — disputes the flag"
                     >
                       <ThumbsDown className="w-3 h-3" />
-                      {flag.downvotes}
+                      {flag.voterCount > 0 ? `${flag.downvotes.toFixed(3)}` : '0'}
                     </button>
                     <span className="text-[10px] text-[#8892b0]">{pct}% backing</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={flag.status === 'Resolved' ? 'green' : 'yellow'}>
+                    <Badge variant={flag.status === 'Open' ? 'yellow' : flag.status === 'Upheld' ? 'green' : 'red'}>
                       {flag.status}
                     </Badge>
                     <span className="text-[10px] text-[#8892b0] font-mono">{flag.reporter}</span>
@@ -108,39 +110,46 @@ export default function FlagForm({ matchId, matchFlags, wallet, onRaiseFlag, onV
       {/* Divider */}
       <div className="pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
         {wallet ? (
-          <>
-            <p className="text-xs font-bold text-[#ccd6f6] uppercase tracking-wider mb-2">
-              🚩 Call it out
-            </p>
-            <textarea
-              rows={3}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Spill the tea ☕ — what's sus about this match?"
-              className="w-full rounded-xl p-3 text-xs text-[#e2e8f0] placeholder-[#4a5568] outline-none resize-none mb-3 transition-colors"
-              style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.09)' }}
-              onFocus={e => e.target.style.borderColor = 'rgba(255,56,96,0.5)'}
-              onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.09)'}
-            />
-            <div className="flex gap-3 items-center">
-              <div className="shrink-0 flex items-center gap-2 px-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-xl">
-                <span className="text-xs font-mono text-[#ccd6f6] font-bold">{STAKE}</span>
-                <span className="text-[10px] text-[#8892b0] font-bold">WIRE</span>
+          matchStatus === 'Completed' ? (
+            <>
+              <p className="text-xs font-bold text-[#ccd6f6] uppercase tracking-wider mb-2">
+                🚩 Call it out
+              </p>
+              <textarea
+                rows={3}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Spill the tea ☕ — what's sus about this match?"
+                className="w-full rounded-xl p-3 text-xs text-[#e2e8f0] placeholder-[#4a5568] outline-none resize-none mb-3 transition-colors"
+                style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.09)' }}
+                onFocus={e => e.target.style.borderColor = 'rgba(255,56,96,0.5)'}
+                onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.09)'}
+              />
+              <div className="flex gap-3 items-center">
+                <div className="shrink-0 flex items-center gap-2 px-3 py-2 bg-white/[0.03] border border-white/[0.06] rounded-xl">
+                  <span className="text-xs font-mono text-[#ccd6f6] font-bold">{STAKE}</span>
+                  <span className="text-[10px] text-[#8892b0] font-bold">WIRE</span>
+                </div>
+                <Button
+                  variant="danger"
+                  className="flex-1 text-xs"
+                  loading={loading}
+                  onClick={handleSubmit}
+                  disabled={!description.trim()}
+                >
+                  {loading ? 'Submitting…' : 'Drop the Flag 🚩'}
+                </Button>
               </div>
-              <Button
-                variant="danger"
-                className="flex-1 text-xs"
-                loading={loading}
-                onClick={handleSubmit}
-                disabled={!description.trim()}
-              >
-                {loading ? 'Submitting…' : 'Drop the Flag 🚩'}
-              </Button>
+              <p className="text-[10px] text-[#8892b0] mt-2">
+                Stake refunded if community backs your flag. No cap.
+              </p>
+            </>
+          ) : (
+            <div className="flex items-center gap-2 text-[#8892b0] text-xs">
+              <Lock className="w-3.5 h-3.5" />
+              Flags can only be raised on completed matches.
             </div>
-            <p className="text-[10px] text-[#8892b0] mt-2">
-              Stake refunded if community backs your flag. No cap.
-            </p>
-          </>
+          )
         ) : (
           <div className="flex items-center gap-2 text-[#8892b0] text-xs">
             <Lock className="w-3.5 h-3.5" />
